@@ -1,5 +1,6 @@
 package com.example.demo.model;
 
+import com.example.demo.model.type.StatusType;
 import lombok.*;
 
 import javax.persistence.*;
@@ -13,21 +14,13 @@ import javax.persistence.*;
 public class Sample {
 
     @Id
-    @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column
     private String name;
 
-    @Column
     private String description;
 
-    @Column
-    private Long statusId;
-
-    @Column
-    private Long typeId;
-
-
+    @Enumerated(EnumType.STRING)
+    private StatusType status;
 
 }
