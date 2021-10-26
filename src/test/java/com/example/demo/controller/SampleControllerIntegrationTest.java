@@ -2,9 +2,8 @@ package com.example.demo.controller;
 
 import com.example.demo.DemoApplication;
 import com.example.demo.model.Sample;
-import com.example.demo.model.Status;
+import com.example.demo.model.type.StatusType;
 import com.example.demo.repository.SampleRepository;
-import com.example.demo.repository.StatusRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -27,31 +27,36 @@ class SampleControllerIntegrationTest {
     MockMvc mockMvc;
 
     @Autowired
-    StatusRepository statusRepository;
-
-    @Autowired
     SampleRepository sampleRepository;
 
     @BeforeEach
     void setUp() {
-        statusRepository.save(Status.builder().id(1L).code(Status.Code.TO_DO).build());
-        statusRepository.save(Status.builder().id(2L).code(Status.Code.IN_PROGRESS).build());
+        sampleRepository.save(Sample.builder().id(1L).name("sample 1").status(StatusType.TODO).build());
+        sampleRepository.save(Sample.builder().id(2L).name("sample 2").status(StatusType.IN_PROGRESS).build());
+        sampleRepository.save(Sample.builder().id(3L).name("sample 3").status(StatusType.DONE).build());
 
-        sampleRepository.save(Sample.builder().id(1L).name("sample 1").statusId(1L).build());
-        sampleRepository.save(Sample.builder().id(2L).name("sample 2").statusId(2L).build());
-
-        log.info("statuses, statuses=[{}]",statusRepository.findAll());
-        log.info("samples, samples=[{}]",sampleRepository.findAll());
+        log.info("samples=[{}]", sampleRepository.findAll());
     }
 
     @Test
-    void test() throws Exception {
-        log.info("start");
-
-        mockMvc.perform(get("/samples/{status}", 1))
+    void getAllByStatus_SHOULD_return_WHEN_statusesIN_PROGRESS() throws Exception {
+        mockMvc.perform(get("/samples/status")
+                .param("statuses", "IN_PROGRESS", "TODO"))
                 .andDo(print())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].status").value(StatusType.TODO.getCaption()))
+                .andExpect(jsonPath("$[1].status").value(StatusType.IN_PROGRESS.getCaption()))
+        ;
+    }
+
+    @Test
+    void getAll_SHOULD_returnAll() throws Exception {
+        mockMvc.perform(get("/samples"))
+                .andDo(print())
+                .andExpect(jsonPath("$", hasSize(3)))
                 .andExpect(jsonPath("$[0].name").value("sample 1"))
-                .andExpect(jsonPath("$[0].statusId").value(1))
+                .andExpect(jsonPath("$[0].status").value(StatusType.TODO.getCaption()))
+                .andExpect(jsonPath("$[1].status").value(StatusType.IN_PROGRESS.getCaption()))
         ;
     }
 }
