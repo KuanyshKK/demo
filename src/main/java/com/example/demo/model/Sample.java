@@ -1,15 +1,17 @@
 package com.example.demo.model;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 
+@Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "sample")
-@Getter
-@Setter
 public class Sample {
+
     @Id
     @Column(name = "id", nullable = false)
     private Long id;
